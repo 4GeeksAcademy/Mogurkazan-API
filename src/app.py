@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
+from models import db, Characters, Planets, Users, Fav_character, Fav_planet
 #from models import Person
 
 app = Flask(__name__)
@@ -36,14 +36,83 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-@app.route('/user', methods=['GET'])
-def handle_hello():
 
+
+#mis elementos
+@app.route('/Characters', methods=['GET'])
+def get_characters():
+    all_characters = Characters.query.all()
+    results = list(map(lambda characters: characters.serialize(), all_characters))
     response_body = {
-        "msg": "Hello, this is your GET /user response "
+        "msg": "Hello, no sé lo que hago"
     }
 
-    return jsonify(response_body), 200
+    return jsonify(results), 200
+
+@app.route('/Characters/<int:character_id>', methods=['GET'])
+def get_character(character_id):
+    character = Characters.query.filter_by(id=character_id).first()
+
+    return jsonify(character.serialize()), 200
+
+@app.route('/Planets', methods=['GET'])
+def get_planets():
+    all_planets = Planets.query.all()
+    results = list(map(lambda planets: planets.serialize(), all_planets))
+    response_body = {
+        "msg": "Hello, no sé lo que hago con planetas"
+    }
+
+    return jsonify(results), 200
+@app.route('/Planets/<int:planet_id>', methods=['GET'])
+def get_planet(planet_id):
+    planet = Planets.query.filter_by(id=planet_id).first()
+
+    return jsonify(planet.serialize()), 200
+
+@app.route('/Users', methods=['GET'])
+def get_users():
+    all_users = Users.query.all()
+    results = list(map(lambda users: users.serialize(), all_users))
+    response_body = {
+        "msg": "Hello, no sé lo que hago con users"
+    }
+@app.route('/Fav_character', methods=['GET'])
+def get_fav_character():
+    all_fav_character = Fav_character.query.all()
+    results = list(map(lambda fav_character: fav_character.serialize(), all_fav_character))
+    response_body = {
+        "msg": "Hello, no sé lo que hago con favs"
+    }
+
+    return jsonify(results), 200
+@app.route('/Fav_planet', methods=['GET'])
+def get_fav_planet():
+    all_fav_planet = Fav_planet.query.all()
+    results = list(map(lambda fav_planet: fav_planet.serialize(), all_fav_planet))
+    response_body = {
+        "msg": "Hello, no sé lo que hago con favs"
+    }
+
+    return jsonify(results), 200
+@app.route('/Users', methods=['POST'])
+def add_users():
+    data = request.json
+    
+    user = Users(**data)
+    db.session.add(user)
+    db.session.commit()
+    response_body = {
+        "msg": "Hello, no sé lo que hago con users en POST"
+    }
+
+    return jsonify(results), 200
+
+
+
+
+
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
