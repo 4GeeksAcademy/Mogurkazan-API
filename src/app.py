@@ -64,6 +64,7 @@ def get_planets():
     }
 
     return jsonify(results), 200
+
 @app.route('/Planets/<int:planet_id>', methods=['GET'])
 def get_planet(planet_id):
     planet = Planets.query.filter_by(id=planet_id).first()
@@ -77,6 +78,8 @@ def get_users():
     response_body = {
         "msg": "Hello, no sé lo que hago con users"
     }
+    return jsonify(results), 200
+
 @app.route('/Fav_character', methods=['GET'])
 def get_fav_character():
     all_fav_character = Fav_character.query.all()
@@ -95,19 +98,84 @@ def get_fav_planet():
     }
 
     return jsonify(results), 200
+
+#crear usuario
 @app.route('/Users', methods=['POST'])
 def add_users():
     data = request.json
-    
+    if data['name'] == "" or data['last_name'] == "" or data['email'] == "" or data['city'] == "":
+        return jsonify('No debe haber campos vacíos'), 400
     user = Users(**data)
     db.session.add(user)
     db.session.commit()
     response_body = {
-        "msg": "Hello, no sé lo que hago con users en POST"
+        "msg": "Debes rellenar todos los campos"
     }
 
-    return jsonify(results), 200
+    return jsonify(response_body), 200
 
+#crear character
+@app.route('/Characters', methods=['POST'])
+def add_character():
+    data = request.json
+    if data['name'] == "" or data['height'] == "" or data['gender'] == "" or data['specie'] == "":
+        return jsonify('No debe haber campos vacíos'), 400
+    character = Characters(**data)
+    db.session.add(character)
+    db.session.commit()
+    response_body = {
+        "msg": "Debes rellenar todos los campos"
+    }
+
+    return jsonify(response_body), 200
+
+#crear planeta
+@app.route('/Planets', methods=['POST'])
+def add_planet():
+    data = request.json
+    if data['name'] == "" or data['population'] == "" or data['terrain'] == "" or data['climate'] == "":
+        return jsonify('No debe haber campos vacíos'), 400
+    planet = Planets(**data)
+    db.session.add(planet)
+    db.session.commit()
+    response_body = {
+        "msg": "Debes rellenar todos los campos"
+    }
+
+    return jsonify(response_body), 200
+
+# Eliminar un usuario
+@app.route('/Users/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    user = Users.query.get(user_id)
+    if user:
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({"message": "Usuario eliminado exitosamente"}), 200
+    else:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+
+# Eliminar un planeta
+@app.route('/Planets/<int:planet_id>', methods=['DELETE'])
+def delete_planet(planet_id):
+    planet = Planets.query.get(planet_id)
+    if planet:
+        db.session.delete(planet)
+        db.session.commit()
+        return jsonify({"message": "Planeta eliminado exitosamente"}), 200
+    else:
+        return jsonify({"error": "Planeta no encontrado"}), 404
+
+# Eliminar un personaje
+@app.route('/Characters/<int:character_id>', methods=['DELETE'])
+def delete_character(character_id):
+    character = Characters.query.get(character_id)
+    if character:
+        db.session.delete(character)
+        db.session.commit()
+        return jsonify({"message": "Personaje eliminado exitosamente"}), 200
+    else:
+        return jsonify({"error": "Personaje no encontrado"}), 404
 
 
 

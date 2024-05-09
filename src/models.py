@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import relationship
 
 db = SQLAlchemy()
 
@@ -10,6 +11,8 @@ class Characters(db.Model):
     height = db.Column(db.String(250), nullable=False)
     gender = db.Column(db.String(250), nullable=False)
     specie = db.Column(db.String(250), nullable=False)
+    fav_users = relationship("Fav_character", back_populates="character")
+
     def __repr__(self):
         return '<Characters %r>' % self.name
 
@@ -29,6 +32,7 @@ class Planets(db.Model):
     population = db.Column(db.String(250), nullable=False)
     terrain = db.Column(db.String(250), nullable=False)
     climate = db.Column(db.String(250), nullable=False)
+    fav_users = relationship("Fav_planet", back_populates="planet")
 
     def __repr__(self):
         return '<Planets %r>' % self.name
@@ -48,6 +52,9 @@ class Users(db.Model):
     last_name = db.Column(db.String(250), nullable=False)
     email = db.Column(db.String(250), nullable=False)
     city = db.Column(db.String(250), nullable=False)
+    fav_characters = relationship("Fav_character", back_populates="user")
+    fav_planets = relationship("Fav_planet", back_populates="user")
+
     def __repr__(self):
         return '<Users %r>' % self.name
 
@@ -61,8 +68,10 @@ class Users(db.Model):
             # do not serialize the password, its a security breach
         }
 class Fav_character(db.Model):
-    user_id = db.Column(db.Integer, primary_key=True)
-    character_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    character_id = db.Column(db.Integer, db.ForeignKey('characters.id'), primary_key=True)
+    user = relationship("Users", back_populates="fav_characters")
+    character = relationship("Characters", back_populates="fav_users")
     
     def __repr__(self):
         return '<Fav_character %r>' % self.user_id
@@ -74,8 +83,10 @@ class Fav_character(db.Model):
             # do not serialize the password, its a security breach
         }
 class Fav_planet(db.Model):
-    user_id = db.Column(db.Integer, primary_key=True)
-    planet_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    planet_id = db.Column(db.Integer, db.ForeignKey('planets.id'), primary_key=True)
+    user = relationship("Users", back_populates="fav_planets")
+    planet = relationship("Planets", back_populates="fav_users")
     
     def __repr__(self):
         return '<Fav_planet %r>' % self.user_id
@@ -87,5 +98,5 @@ class Fav_planet(db.Model):
             # do not serialize the password, its a security breach
         }
     
-    #POST a mis tablas
+   
 
