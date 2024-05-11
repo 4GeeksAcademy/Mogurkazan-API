@@ -49,6 +49,7 @@ def get_characters():
 
     return jsonify(results), 200
 
+#obtiene un character en concreto
 @app.route('/Characters/<int:character_id>', methods=['GET'])
 def get_character(character_id):
     character = Characters.query.filter_by(id=character_id).first()
@@ -65,6 +66,7 @@ def get_planets():
 
     return jsonify(results), 200
 
+#obtiene un planetas en concreto
 @app.route('/Planets/<int:planet_id>', methods=['GET'])
 def get_planet(planet_id):
     planet = Planets.query.filter_by(id=planet_id).first()
@@ -79,6 +81,91 @@ def get_users():
         "msg": "Hello, no sé lo que hago con users"
     }
     return jsonify(results), 200
+
+#obtener los favoritos de cada usuario
+@app.route('/users/favorites', methods=['GET'])
+def get_user_favorites():
+    user_id = request.session.get('user_id')
+    if user_id is not None:
+        
+        user = Users.query.get(user_id)
+
+        if user is not None:
+            
+            fav_characters = Fav_character.query.filter_by(user_id=user_id).all()
+            fav_planets = Fav_planet.query.filter_by(user_id=user_id).all()
+        results = {
+            "user": user.serialize(),
+            "favorite_characters": [fav.serialize() for fav in fav_characters],
+            "favorite_planets": [fav.serialize() for fav in fav_planets]
+        }
+        return jsonify(results), 200
+    
+#añadir planetas y characters a favoritos
+@app.route('/favorite/planet/<int:planet_id>', methods=['POST'])
+def add_favorite_planet(planet_id):
+    user_id = request.session.get('user_id')
+    if user_id is not None:
+        # Verificar si el planeta ya está en los favoritos del usuario
+        if Fav_planet.query.filter_by(user_id=user_id, planet_id=planet_id).first():
+            return jsonify({"message": "El planeta ya está en los favoritos del usuario"}), 400
+
+        # Crear una nueva entrada en la tabla Fav_planet asociando el usuario y el planeta
+        new_favorite = Fav_planet(user_id=user_id, planet_id=planet_id)
+        db.session.add(new_favorite)
+        db.session.commit()
+        return jsonify({"message": "Planeta agregado a los favoritos del usuario"}), 200
+    else:
+        return jsonify({"error": "Usuario no autenticado"}), 401
+
+@app.route('/favorite/character/<int:character_id>', methods=['POST'])
+def add_favorite_character(character_id):
+    user_id = request.session.get('user_id')
+    if user_id is not None:
+        # Verificar si el personaje ya está en los favoritos del usuario
+        if Fav_character.query.filter_by(user_id=user_id, character_id=character_id).first():
+            return jsonify({"message": "El personaje ya está en los favoritos del usuario"}), 400
+
+        # Crear una nueva entrada en la tabla Fav_character asociando el usuario y el personaje
+        new_favorite = Fav_character(user_id=user_id, character_id=character_id)
+        db.session.add(new_favorite)
+        db.session.commit()
+        return jsonify({"message": "Personaje agregado a los favoritos del usuario"}), 200
+    else:
+        return jsonify({"error": "Usuario no autenticado"}), 401
+
+#Elimina planetas y characters favoritos de cada usuario
+@app.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
+def delete_favorite_planet(planet_id):
+    user_id = request.session.get('user_id')
+    if user_id is not None:
+        favorite = Fav_planet.query.filter_by(user_id=user_id, planet_id=planet_id).first()
+        if favorite:
+            db.session.delete(favorite)
+            db.session.commit()
+            return jsonify({"message": "Planeta eliminado de los favoritos del usuario"}), 200
+        else:
+            return jsonify({"message": "El planeta no está en los favoritos del usuario"}), 404
+    else:
+        return jsonify({"error": "Usuario no autenticado"}), 401
+
+@app.route('/favorite/character/<int:character_id>', methods=['DELETE'])
+def delete_favorite_character(character_id):
+    user_id = request.session.get('user_id')
+    if user_id is not None:
+        
+        favorite = Fav_character.query.filter_by(user_id=user_id, character_id=character_id).first()
+
+        if favorite:
+            
+            db.session.delete(favorite)
+            db.session.commit()
+            return jsonify({"message": "Personaje eliminado de los favoritos del usuario"}), 200
+        else:
+            return jsonify({"message": "El personaje no está en los favoritos del usuario"}), 404
+    else:
+        return jsonify({"error": "Usuario no autenticado"}), 401
+
 
 @app.route('/Fav_character', methods=['GET'])
 def get_fav_character():
