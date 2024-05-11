@@ -82,6 +82,13 @@ def get_users():
     }
     return jsonify(results), 200
 
+#obtiene un usuario en concreto
+@app.route('/Users/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    user = Users.query.filter_by(id=user_id).first()
+
+    return jsonify(user.serialize()), 200
+
 #obtener los favoritos de cada usuario
 @app.route('/users/favorites', methods=['GET'])
 def get_user_favorites():
