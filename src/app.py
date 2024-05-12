@@ -109,37 +109,33 @@ def get_user_favorites():
         return jsonify(results), 200
     
 #añadir planetas y characters a favoritos
-@app.route('/favorite/planet/<int:planet_id>', methods=['POST'])
-def add_favorite_planet(planet_id):
-    user_id = request.session.get('user_id')
-    if user_id is not None:
-        # Verificar si el planeta ya está en los favoritos del usuario
-        if Fav_planet.query.filter_by(user_id=user_id, planet_id=planet_id).first():
-            return jsonify({"message": "El planeta ya está en los favoritos del usuario"}), 400
+@app.route('/users/<int:user_id>/fav_planet', methods=['POST'])
+def add_favorite_planet(user_id, planet_id):
+    user = Users.query.get(user_id)
+    if user is None:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+    planet_id = request.json.get('planet_id')
+    if Fav_planet.query.filter_by(user_id=user_id, planet_id=planet_id).first():
+        return jsonify({"message": "El planeta ya está en los favoritos del usuario"}), 400
+    new_favorite = Fav_planet(user_id=user_id, planet_id=planet_id)
+    db.session.add(new_favorite)
+    db.session.commit()
 
-        # Crear una nueva entrada en la tabla Fav_planet asociando el usuario y el planeta
-        new_favorite = Fav_planet(user_id=user_id, planet_id=planet_id)
-        db.session.add(new_favorite)
-        db.session.commit()
-        return jsonify({"message": "Planeta agregado a los favoritos del usuario"}), 200
-    else:
-        return jsonify({"error": "Usuario no autenticado"}), 401
+    return jsonify({"message": "Planeta agregado a los favoritos del usuario"}), 200
 
-@app.route('/favorite/character/<int:character_id>', methods=['POST'])
-def add_favorite_character(character_id):
-    user_id = request.session.get('user_id')
-    if user_id is not None:
-        # Verificar si el personaje ya está en los favoritos del usuario
-        if Fav_character.query.filter_by(user_id=user_id, character_id=character_id).first():
-            return jsonify({"message": "El personaje ya está en los favoritos del usuario"}), 400
+@app.route('/users/<int:user_id>/fav_character', methods=['POST'])
+def add_favorite_character(user_id, character_id):
+    user = Users.query.get(user_id)
+    if user is None:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+    character_id = request.json.get('character_id')
+    if Fav_character.query.filter_by(user_id=user_id, character_id=character_id).first():
+        return jsonify({"message": "El personaje ya está en los favoritos del usuario"}), 400
+    new_favorite = Fav_character(user_id=user_id, character_id=character_id)
+    db.session.add(new_favorite)
+    db.session.commit()
 
-        # Crear una nueva entrada en la tabla Fav_character asociando el usuario y el personaje
-        new_favorite = Fav_character(user_id=user_id, character_id=character_id)
-        db.session.add(new_favorite)
-        db.session.commit()
-        return jsonify({"message": "Personaje agregado a los favoritos del usuario"}), 200
-    else:
-        return jsonify({"error": "Usuario no autenticado"}), 401
+    return jsonify({"message": "Personaje agregado a los favoritos del usuario"}), 200
 
 #Elimina planetas y characters favoritos de cada usuario
 @app.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
@@ -218,7 +214,7 @@ def add_character():
     db.session.add(character)
     db.session.commit()
     response_body = {
-        "msg": "Debes rellenar todos los campos"
+        "msg": "Character creado correctamente"
     }
 
     return jsonify(response_body), 200
@@ -233,7 +229,7 @@ def add_planet():
     db.session.add(planet)
     db.session.commit()
     response_body = {
-        "msg": "Debes rellenar todos los campos"
+        "msg": "Planeta creado correctamente"
     }
 
     return jsonify(response_body), 200
